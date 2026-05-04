@@ -1,19 +1,21 @@
 /* ===================================================
    wappy2896 — Apple-Style Premium Interactions
+   (Full Version with Domain Guard)
    =================================================== */
 
 (function () {
     'use strict';
 
-    // Scroll restoration control
+    // スクロール位置のリセット
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- ドメインチェックの実行 ---
-        checkDomain();
+    document.addEventListener('DOMContentLoaded', async () => {
+        
+        // --- [追加機能] ドメインチェックを待機 ---
+        await checkDomain();
 
         const loadingScreen = document.getElementById('loading-screen');
         const loaderBar = document.getElementById('loader-bar');
@@ -25,14 +27,10 @@
         const scrollIndicator = document.getElementById('scroll-indicator');
 
         // ===================================================
-        // 1. LOADING SCREEN (first visit only via sessionStorage)
+        // 1. LOADING SCREEN
         // ===================================================
-        const LOADING_KEY = 'wappy_loaded';
-
         function cubicBezier(t) {
-            return t < 0.5
-                ? 4 * t * t * t
-                : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         }
 
         function runLoadingAnimation() {
@@ -62,7 +60,6 @@
                     }, 300);
                 }
             }
-
             requestAnimationFrame(animate);
         }
 
@@ -80,10 +77,11 @@
             fetchYouTubeStats();
         }
 
+        // ロード開始
         runLoadingAnimation();
 
         // ===================================================
-        // 2. HERO PARALLAX + SCALE on SCROLL (rAF-driven)
+        // 2. HERO PARALLAX + SCALE on SCROLL
         // ===================================================
         let ticking = false;
         let lastScrollY = 0;
@@ -103,10 +101,13 @@
             const heroProgress = Math.min(scrollY / windowH, 1);
             const heroScale = 1 - heroProgress * 0.25;
             const heroTranslateY = -heroProgress * 40;
-            heroContent.style.transform =
-                `translate3d(0, ${heroTranslateY}px, 0) scale(${heroScale})`;
-
-            heroBg.style.transform = `translate3d(0, ${scrollY * 0.3}px, 0)`;
+            
+            if(heroContent) {
+                heroContent.style.transform = `translate3d(0, ${heroTranslateY}px, 0) scale(${heroScale})`;
+            }
+            if(heroBg) {
+                heroBg.style.transform = `translate3d(0, ${scrollY * 0.3}px, 0)`;
+            }
 
             if (scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -118,7 +119,6 @@
                 const indicatorOpacity = Math.max(0, 1 - scrollY / 200);
                 scrollIndicator.style.opacity = indicatorOpacity * 0.6;
             }
-
             ticking = false;
         }
 
@@ -178,7 +178,7 @@
         }
 
         // ===================================================
-        // 5. SUBSCRIBER COUNT — Animated Counter (once)
+        // 5. SUBSCRIBER COUNT — Animated Counter
         // ===================================================
         const API_KEY = 'AIzaSyARGzv0qvjqn2akf1Mo6_WzHohLaJYzFvo';
         const CHANNEL_ID = '@wappy2896';
@@ -187,7 +187,6 @@
         function animateCounter(target, duration) {
             if (counterAnimated) return;
             counterAnimated = true;
-
             const startTime = performance.now();
 
             function step(currentTime) {
@@ -195,50 +194,38 @@
                 const progress = Math.min(elapsed / duration, 1);
                 const eased = progress * (2 - progress);
                 const current = Math.floor(eased * target);
-
                 subscriberCount.textContent = current.toLocaleString();
-
                 if (progress < 1) {
                     requestAnimationFrame(step);
                 } else {
                     subscriberCount.textContent = target.toLocaleString();
                 }
             }
-
             requestAnimationFrame(step);
         }
 
         function fetchYouTubeStats() {
             const url = `https://youtube.googleapis.com/youtube/v3/channels?part=statistics&forHandle=${encodeURIComponent(CHANNEL_ID)}&key=${API_KEY}`;
-
             fetch(url)
-                .then(res => {
-                    if (!res.ok) throw new Error('API error');
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
                     if (data.items && data.items.length > 0) {
                         const subs = parseInt(data.items[0].statistics.subscriberCount, 10);
-                        if (!isNaN(subs)) {
-                            window._subCount = subs;
-                            if (window._startCounterWhenReady) {
-                                animateCounter(subs, 1800);
-                            }
-                        } else {
-                            subscriberCount.textContent = '非公開';
+                        window._subCount = subs;
+                        if (window._startCounterWhenReady) {
+                            animateCounter(subs, 1800);
                         }
                     } else {
-                        subscriberCount.textContent = 'データなし';
+                        subscriberCount.textContent = '---';
                     }
                 })
-                .catch(err => {
-                    console.error('YouTube API error:', err);
-                    subscriberCount.textContent = 'エラー';
+                .catch(() => {
+                    subscriberCount.textContent = 'Error';
                 });
         }
 
         // ===================================================
-        // 6. FUN INTERACTIONS & EASTER EGGS
+        // 6. FUN INTERACTIONS & EASTER EGGS (そのまま維持)
         // ===================================================
         const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
@@ -277,13 +264,9 @@
                     confetti.style.animationDuration = `${duration}s`;
                     confetti.style.animationDelay = `${delay}s`;
                     document.body.appendChild(confetti);
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, (duration + delay) * 1000);
+                    setTimeout(() => confetti.remove(), (duration + delay) * 1000);
                 }
-                setTimeout(() => {
-                    bodyClass.remove('easter-egg-party');
-                }, 5000);
+                setTimeout(() => bodyClass.remove('easter-egg-party'), 5000);
                 secretSequence = [];
             }
         });
@@ -292,45 +275,53 @@
         // 7. DOMAIN CHECKER (Popup)
         // ===================================================
         function checkDomain() {
-            const canonicalDomain = 'wappy2896.pages.dev';
-            const currentDomain = window.location.hostname;
+            return new Promise((resolve) => {
+                const canonicalDomain = 'wappy2896.pages.dev';
+                const currentDomain = window.location.hostname;
 
-            // nagyou.net などが含まれている場合に警告を出す
-            if (currentDomain.includes('nagyou.net')) {
-                const overlay = document.createElement('div');
-                overlay.style = `
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0,0,0,0.85); z-index: 10000;
-                    display: flex; align-items: center; justify-content: center;
-                    color: white; font-family: sans-serif; padding: 20px;
-                `;
+                if (currentDomain.includes('nagyou.net')) {
+                    const overlay = document.createElement('div');
+                    overlay.style = `
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.9); z-index: 10000;
+                        display: flex; align-items: center; justify-content: center;
+                        backdrop-filter: blur(10px); padding: 20px;
+                    `;
 
-                const modal = document.createElement('div');
-                modal.style = `
-                    background: #1a1a1a; padding: 30px; border-radius: 20px;
-                    text-align: center; max-width: 450px; border: 2px solid #333;
-                `;
+                    const modal = document.createElement('div');
+                    modal.style = `
+                        background: #1c1c1e; padding: 40px 30px; border-radius: 24px;
+                        text-align: center; max-width: 400px; color: white;
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid #333;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    `;
 
-                modal.innerHTML = `
-                    <h2 style="margin-top:0; color: #ff4757;">ドメインが異なります</h2>
-                    <p>正しいURLは <strong>${canonicalDomain}</strong> です。<br>
-                    現在のドメインではYouTube APIなどが正常に動作しない可能性があります。</p>
-                    <button id="moveBtn" style="background:#007bff; color:white; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; margin-bottom:10px;">正しいサイトへ移動</button>
-                    <button id="stayBtn" style="background:transparent; color:#aaa; border:none; cursor:pointer; text-decoration:underline;">無視して閉じる</button>
-                `;
+                    modal.innerHTML = `
+                        <div style="font-size: 50px; margin-bottom: 10px;">⚠️</div>
+                        <h2 style="margin: 0 0 15px; font-size: 22px;">こちらはテスト段階です！</h2>
+                        <p style="color: #aeaeb2; font-size: 15px; line-height: 1.5; margin-bottom: 25px;">
+                            正常に動作しない可能性があります。<br>
+                            最新版は ${canonicalDomain} で公開されています。
+                        </p>
+                        <button id="moveBtn" style="background:#fff; color:#000; border:none; padding:14px; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size: 16px; margin-bottom:15px;">新しいサイトへ移動</button>
+                        <button id="stayBtn" style="background:transparent; color:#636366; border:none; cursor:pointer; font-size: 14px; text-decoration:underline;">無視して続ける</button>
+                    `;
 
-                overlay.appendChild(modal);
-                document.body.appendChild(overlay);
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
 
-                document.getElementById('moveBtn').onclick = () => {
-                    window.location.href = `https://${canonicalDomain}` + window.location.pathname;
-                };
+                    document.getElementById('moveBtn').onclick = () => {
+                        window.location.href = `https://${canonicalDomain}` + window.location.pathname;
+                    };
 
-                document.getElementById('stayBtn').onclick = () => {
-                    document.body.removeChild(overlay);
-                };
-            }
+                    document.getElementById('stayBtn').onclick = () => {
+                        document.body.removeChild(overlay);
+                        resolve(); // 無視されたら実行開始
+                    };
+                } else {
+                    resolve(); // 最初から正しいドメインなら即実行
+                }
+            });
         }
-
     });
 })();

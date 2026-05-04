@@ -12,6 +12,9 @@
     window.scrollTo(0, 0);
 
     document.addEventListener('DOMContentLoaded', () => {
+        // --- ドメインチェックの実行 ---
+        checkDomain();
+
         const loadingScreen = document.getElementById('loading-screen');
         const loaderBar = document.getElementById('loader-bar');
         const mainContent = document.getElementById('main-content');
@@ -64,23 +67,19 @@
         }
 
         function revealContent() {
-            // Ensure body is scrollable
             document.body.classList.add('loaded');
             document.body.style.overflow = '';
             document.body.style.overflowX = 'hidden';
             document.body.style.overflowY = 'auto';
 
-            // Force main content visible with inline styles as fallback
             mainContent.style.opacity = '1';
             mainContent.style.transform = 'translateY(0)';
             mainContent.classList.add('visible');
 
-            // Initialize all animations
             initObservers();
             fetchYouTubeStats();
         }
 
-        // === ALWAYS SHOW LOADING ANIMATION ===
         runLoadingAnimation();
 
         // ===================================================
@@ -101,24 +100,20 @@
             const scrollY = lastScrollY;
             const windowH = window.innerHeight;
 
-            // Hero text: scale 1 → 0.75, translateY 0 → -40px
             const heroProgress = Math.min(scrollY / windowH, 1);
             const heroScale = 1 - heroProgress * 0.25;
             const heroTranslateY = -heroProgress * 40;
             heroContent.style.transform =
                 `translate3d(0, ${heroTranslateY}px, 0) scale(${heroScale})`;
 
-            // Hero background parallax: scrollY * 0.3
             heroBg.style.transform = `translate3d(0, ${scrollY * 0.3}px, 0)`;
 
-            // Navbar: transparent → frosted glass
             if (scrollY > 50) {
                 navbar.classList.add('scrolled');
             } else {
                 navbar.classList.remove('scrolled');
             }
 
-            // Fade out scroll indicator as user scrolls
             if (scrollIndicator) {
                 const indicatorOpacity = Math.max(0, 1 - scrollY / 200);
                 scrollIndicator.style.opacity = indicatorOpacity * 0.6;
@@ -129,9 +124,6 @@
 
         window.addEventListener('scroll', onScroll, { passive: true });
 
-        // ===================================================
-        // 3. SCROLL INDICATOR — click to scroll to next section
-        // ===================================================
         if (scrollIndicator) {
             scrollIndicator.addEventListener('click', () => {
                 const statsSection = document.getElementById('stats-section');
@@ -166,7 +158,6 @@
                 fadeObserver.observe(el);
             });
 
-            // Stats counter observer
             const statsSection = document.getElementById('stats-section');
             if (statsSection) {
                 const statsObserver = new IntersectionObserver((entries) => {
@@ -190,7 +181,6 @@
         // 5. SUBSCRIBER COUNT — Animated Counter (once)
         // ===================================================
         const API_KEY = 'AIzaSyARGzv0qvjqn2akf1Mo6_WzHohLaJYzFvo';
-        // API 書き換え728垢に
         const CHANNEL_ID = '@wappy2896';
         let counterAnimated = false;
 
@@ -250,8 +240,6 @@
         // ===================================================
         // 6. FUN INTERACTIONS & EASTER EGGS
         // ===================================================
-
-        // A. Magic Glow Spotlight Effect on Cards
         const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             card.addEventListener('mousemove', e => {
@@ -263,62 +251,86 @@
             });
         });
 
-        // B. Keyboard Easter Egg: Type "wappy"
         let secretSequence = [];
         const secretCode = ['w', 'a', 'p', 'p', 'y'];
         const bodyClass = document.body.classList;
 
         window.addEventListener('keydown', (e) => {
-            // Ignore if typing in an input field (though none exists right now)
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
             secretSequence.push(e.key.toLowerCase());
-
-            // Keep the array size at max 5
             if (secretSequence.length > secretCode.length) {
                 secretSequence.shift();
             }
-
-            // Check match
             if (secretSequence.join('') === secretCode.join('')) {
-                // Trigger Easter Egg!
                 bodyClass.add('easter-egg-party');
-
-                // Spawn Wappy Confetti
                 for (let i = 0; i < 30; i++) {
                     const confetti = document.createElement('img');
                     confetti.src = '4117EF31-3841-4C94-B419-0E731D7C7061.png';
                     confetti.className = 'wappy-confetti';
-
-                    // Randomize position, size, and fall speed
-                    const left = Math.random() * 100; // vw
-                    const size = 30 + Math.random() * 50; // px
-                    const duration = 2 + Math.random() * 3; // seconds
-                    const delay = Math.random() * 1.5; // seconds
-
+                    const left = Math.random() * 100;
+                    const size = 30 + Math.random() * 50;
+                    const duration = 2 + Math.random() * 3;
+                    const delay = Math.random() * 1.5;
                     confetti.style.left = `${left}vw`;
                     confetti.style.width = `${size}px`;
                     confetti.style.height = `${size}px`;
                     confetti.style.animationDuration = `${duration}s`;
                     confetti.style.animationDelay = `${delay}s`;
-
                     document.body.appendChild(confetti);
-
-                    // Clean up after it falls
                     setTimeout(() => {
                         confetti.remove();
                     }, (duration + delay) * 1000);
                 }
-
-                // Reset screen shake and visual party mode after 5 seconds
                 setTimeout(() => {
                     bodyClass.remove('easter-egg-party');
                 }, 5000);
-
-                // Clear sequence so it doesn't immediately re-trigger
                 secretSequence = [];
             }
         });
+
+        // ===================================================
+        // 7. DOMAIN CHECKER (Popup)
+        // ===================================================
+        function checkDomain() {
+            const canonicalDomain = 'wappy2896.pages.dev';
+            const currentDomain = window.location.hostname;
+
+            // nagyou.net などが含まれている場合に警告を出す
+            if (currentDomain.includes('nagyou.net')) {
+                const overlay = document.createElement('div');
+                overlay.style = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.85); z-index: 10000;
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-family: sans-serif; padding: 20px;
+                `;
+
+                const modal = document.createElement('div');
+                modal.style = `
+                    background: #1a1a1a; padding: 30px; border-radius: 20px;
+                    text-align: center; max-width: 450px; border: 2px solid #333;
+                `;
+
+                modal.innerHTML = `
+                    <h2 style="margin-top:0; color: #ff4757;">ドメインが異なります</h2>
+                    <p>正しいURLは <strong>${canonicalDomain}</strong> です。<br>
+                    現在のドメインではYouTube APIなどが正常に動作しない可能性があります。</p>
+                    <button id="moveBtn" style="background:#007bff; color:white; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; margin-bottom:10px;">正しいサイトへ移動</button>
+                    <button id="stayBtn" style="background:transparent; color:#aaa; border:none; cursor:pointer; text-decoration:underline;">無視して閉じる</button>
+                `;
+
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+
+                document.getElementById('moveBtn').onclick = () => {
+                    window.location.href = `https://${canonicalDomain}` + window.location.pathname;
+                };
+
+                document.getElementById('stayBtn').onclick = () => {
+                    document.body.removeChild(overlay);
+                };
+            }
+        }
 
     });
 })();

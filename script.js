@@ -296,7 +296,7 @@
                     `;
 
                     modal.innerHTML = `
-                        <div style="font-size: 50px; margin-bottom: 10px;">⚠️</div>
+                        
                         <h2 style="margin: 0 0 15px; font-size: 22px;">こちらはテスト段階です！</h2>
                         <p style="color: #aeaeb2; font-size: 15px; line-height: 1.5; margin-bottom: 25px;">
                             正常に動作しない可能性があります。<br>

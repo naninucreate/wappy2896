@@ -189,7 +189,7 @@
         // ===================================================
         // 5. SUBSCRIBER COUNT — Animated Counter (once)
         // ===================================================
-        const API_KEY = 'AIzaSyBzh3krEhy-szEg5yEwoVUQqR9_TOqOPto';
+        const API_KEY = 'AIzaSyAtMlM2T-YofturhLUwdhz8nTjHYJ-PJs0';
         const CHANNEL_ID = '@wappy2896';
         let counterAnimated = false;
 

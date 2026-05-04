@@ -1,6 +1,5 @@
 /* ===================================================
-   wappy2896 — Apple-Style Premium Interactions
-   (Full Version with Domain Guard)
+   c wappy2896 | edit nagyou_ ver 2
    =================================================== */
 
 (function () {

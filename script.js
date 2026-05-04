@@ -189,7 +189,8 @@
         // ===================================================
         // 5. SUBSCRIBER COUNT — Animated Counter (once)
         // ===================================================
-        const API_KEY = 'AIzaSyAtMlM2T-YofturhLUwdhz8nTjHYJ-PJs0';
+        const API_KEY = 'AIzaSyARGzv0qvjqn2akf1Mo6_WzHohLaJYzFvo';
+        // API 書き換え728垢に
         const CHANNEL_ID = '@wappy2896';
         let counterAnimated = false;
 

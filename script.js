@@ -302,7 +302,7 @@
                             正常に動作しない可能性があります。<br>
                             最新版は ${canonicalDomain} で公開されています。
                         </p>
-                        <button id="moveBtn" style="background:#fff; color:#000; border:none; padding:14px; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size: 16px; margin-bottom:15px;">新しいサイトへ移動</button>
+                        <button id="moveBtn" style="background:#fff; color:#000; border:none; padding:14px; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size: 16px; margin-bottom:15px;">動作保証サイトへ移動</button>
                         <button id="stayBtn" style="background:transparent; color:#636366; border:none; cursor:pointer; font-size: 14px; text-decoration:underline;">無視して続ける</button>
                     `;
 

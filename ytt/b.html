@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ランダム番号抽選</title>
+
+<style>
+    body{
+        font-family:sans-serif;
+        background:#f2f2f2;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        margin:0;
+    }
+
+    .box{
+        background:white;
+        padding:30px;
+        border-radius:15px;
+        box-shadow:0 0 15px rgba(0,0,0,0.15);
+        width:360px;
+        text-align:center;
+    }
+
+    input{
+        width:90%;
+        padding:10px;
+        margin:8px 0;
+        font-size:16px;
+    }
+
+    button{
+        padding:10px 20px;
+        font-size:16px;
+        cursor:pointer;
+        border:none;
+        border-radius:10px;
+        background:#4a90e2;
+        color:white;
+        margin-top:10px;
+    }
+
+    #result{
+        margin-top:20px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        justify-content:center;
+    }
+
+    .number{
+        font-size:24px;
+        font-weight:bold;
+        padding:10px 16px;
+        background:#eee;
+        border-radius:10px;
+        cursor:pointer;
+        user-select:none;
+        transition:0.2s;
+    }
+
+    .number:hover{
+        transform:scale(1.05);
+    }
+
+    .copied{
+        text-decoration:line-through;
+        opacity:0.5;
+        background:#ffb3b3;
+    }
+
+    .info{
+        margin-top:15px;
+        color:#666;
+        font-size:14px;
+    }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+    <h2>ランダム番号抽選</h2>
+
+    <input type="number" id="start" placeholder="開始番号 例:1">
+    <input type="number" id="end" placeholder="終了番号 例:10">
+    <input type="number" id="count" placeholder="何個出す？">
+
+    <br>
+    <button onclick="drawNumbers()">抽選</button>
+
+    <div class="info">
+        数字を押すとコピー
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+function drawNumbers(){
+
+    const start = Number(document.getElementById("start").value);
+    const end = Number(document.getElementById("end").value);
+    const count = Number(document.getElementById("count").value);
+
+    if(start > end){
+        alert("開始番号は終了番号以下にして");
+        return;
+    }
+
+    const numbers = [];
+
+    for(let i = start; i <= end; i++){
+        numbers.push(i);
+    }
+
+    if(count > numbers.length){
+        alert("個数が多すぎる");
+        return;
+    }
+
+    // シャッフル
+    for(let i = numbers.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    }
+
+    const result = numbers.slice(0, count);
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    result.forEach(num => {
+
+        const div = document.createElement("div");
+
+        div.className = "number";
+        div.textContent = num;
+
+        div.onclick = async () => {
+
+            await navigator.clipboard.writeText(num);
+
+            div.classList.add("copied");
+        };
+
+        resultDiv.appendChild(div);
+    });
+}
+
+</script>
+
+</body>
+</html>

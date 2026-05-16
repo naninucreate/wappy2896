@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTubeツール一覧</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    background:#f2f2f2;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.list{
+    max-width:700px;
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.tool{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.tool:hover{
+    transform:translateY(-3px);
+}
+
+.title{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.desc{
+    margin-top:8px;
+    color:#666;
+}
+</style>
+</head>
+<body>
+
+<h1>YouTubeツール一覧</h1>
+
+<div class="list">
+
+    <div class="tool" onclick="go('b.html')">
+        <div class="title">ランダム番号抽選</div>
+        <div class="desc">
+            ランダムに数字を抽選
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+function go(url){
+    location.href = url;
+}
+
+</script>
+
+</body>
+</html>

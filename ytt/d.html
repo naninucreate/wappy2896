@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランダム日付ジェネレーター</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: #4a5568;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #2b6cb0;
+        }
+        .date-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .date-item {
+            padding: 10px 15px;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: bold;
+            position: relative;
+        }
+        .date-item:hover {
+            background-color: #ebf8ff;
+            border-color: #bee3f8;
+            transform: translateY(-1px);
+        }
+        /* コピーされた（使用済み）のスタイル */
+        .date-item.copied {
+            color: #a0aec0;
+            background-color: #edf2f7;
+            border-color: #cbd5e0;
+            cursor: default;
+            transform: none;
+        }
+        /* 赤い打消し線（斜線） */
+        .date-item.copied::after {
+            content: "";
+            position: absolute;
+            left: 5%;
+            top: 50%;
+            width: 90%;
+            height: 2px;
+            background-color: #e53e3e; /* 赤色 */
+            transform: rotate(-15deg); /* 斜線の角度 */
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2d3748;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📅 ランダム日付ジェネレーター</h1>
+    
+    <div class="controls">
+        <input type="number" id="countInput" value="10" min="1" max="366">
+        <button onclick="generateDates()">日付を生成</button>
+    </div>
+
+    <div class="date-list" id="dateList"></div>
+
+    <div class="toast" id="toast">コピーしました！</div>
+
+    <script>
+        // 全通りの日付（1月1日〜12月31日）を生成する関数
+        function getAllDays() {
+            const days = [];
+            // うるう年（2024年など）を基準にすることで2月29日もカバー
+            const start = new Date(2024, 0, 1); 
+            const end = new Date(2024, 11, 31);
+            
+            for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+                const month = d.getMonth() + 1;
+                const date = d.getDate();
+                days.push(`${month}月${date}日`);
+            }
+            return days;
+        }
+
+        // 指定個数のランダムな日付を生成して表示する関数
+        function generateDates() {
+            const countInput = document.getElementById('countInput');
+            let count = parseInt(countInput.value);
+            const container = document.getElementById('dateList');
+            container.innerHTML = ''; // 画面をクリア
+
+            const allDays = getAllDays();
+
+            // 入力値のバリデーション（最大366個）
+            if (isNaN(count) || count < 1) count = 1;
+            if (count > allDays.length) count = allDays.length;
+            countInput.value = count;
+
+            // フィッシャー–イェーツのシャッフルで順番を完全にランダムにする
+            for (let i = allDays.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allDays[i], allDays[j]] = [allDays[j], allDays[i]];
+            }
+
+            // 指定された個数だけ取り出す
+            const selectedDays = allDays.slice(0, count);
+
+            // 画面に要素を追加
+            selectedDays.forEach(dateStr => {
+                const item = document.createElement('div');
+                item.className = 'date-item';
+                item.textContent = dateStr;
+                
+                // クリックイベント（コピー＆斜線）
+                item.addEventListener('click', () => {
+                    if (!item.classList.contains('copied')) {
+                        copyToClipboard(dateStr);
+                        item.classList.add('copied');
+                    }
+                });
+
+                container.appendChild(item);
+            });
+        }
+
+        // クリップボードへのコピー処理
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`${text} をコピーしました`);
+            }).catch(err => {
+                console.error('コピー失敗: ', err);
+            });
+        }
+
+        // 画面下部にポップアップ通知を表示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1500);
+        }
+
+        // 初回起動時にも自動で10個生成しておく
+        generateDates();
+    </script>
+</body>
+</html>

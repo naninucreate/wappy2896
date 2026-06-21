@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>カウンター</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000000; /* 完全な黒 */
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 現在の登録者数 */
+        .count {
+            font-size: 20vw;
+            font-weight: bold;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* カウントダウン */
+        .countdown {
+            font-size: 4vw;
+            color: #888888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="count" id="subCount">----</div>
+    <div class="countdown" id="countdownArea">5万人まで あと ----</div>
+
+    <script>
+        const API_KEY = 'AIzaSyARGzv0qvjqn2akf1Mo6_WzHohLaJYzFvo'; 
+        const CHANNEL_ID = 'UC5rcVpwFUjCfdVglFwrvlsQ'; 
+        const TARGET = 50000; 
+
+        const subCountEl = document.getElementById('subCount');
+        const countdownAreaEl = document.getElementById('countdownArea');
+
+        async function fetchSubscribers() {
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const subs = parseInt(data.items[0].statistics.subscriberCount, 10);
+                
+                subCountEl.textContent = subs.toLocaleString();
+                
+                const remaining = TARGET - subs;
+                if (remaining <= 0) {
+                    countdownAreaEl.textContent = "5万人達成";
+                } else {
+                    countdownAreaEl.textContent = `5万人まで あと ${remaining.toLocaleString()}`;
+                }
+            } catch (error) {
+                subCountEl.textContent = "ERROR";
+            }
+        }
+
+        fetchSubscribers();
+        setInterval(fetchSubscribers, 60000); // 1分ごとに更新
+    </script>
+
+</body>
+</html>
